@@ -19,8 +19,8 @@
 
 package com.mpush.mpns.web.common;
 
+
 import com.mpush.tools.Jsons;
-import io.vertx.core.json.JsonObject;
 
 /**
  * Created by ohun on 16/9/15.
@@ -28,10 +28,14 @@ import io.vertx.core.json.JsonObject;
  * @author ohun@live.cn (夜色)
  */
 public class ApiResult<T> {
+    public static final int VERTIFY_SUCCESS = 1;  //验证成功
+    public static final int VERTIFY_FAILURE = 0;  //验证失败
+
     private int code;
     private T data;
     private String msg;
     private boolean success;
+    public String userId;
 
     public ApiResult(T data) {
         this.data = data;
@@ -42,6 +46,21 @@ public class ApiResult<T> {
     public ApiResult(int code, String msg) {
         this.code = code;
         this.msg = msg;
+    }
+
+    public ApiResult(int code, String msg ,String userId) {
+        this.code = code;
+        this.msg = msg;
+        this.userId = userId;
+    }
+
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 
     public int getCode() {

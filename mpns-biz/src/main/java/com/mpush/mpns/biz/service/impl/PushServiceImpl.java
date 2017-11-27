@@ -22,17 +22,21 @@ package com.mpush.mpns.biz.service.impl;
 import com.mpush.api.Constants;
 import com.mpush.api.push.*;
 import com.mpush.api.router.ClientLocation;
-import com.mpush.mpns.biz.service.PushService;
 import com.mpush.mpns.biz.domain.NotifyDO;
 import com.mpush.mpns.biz.domain.OfflineMsg;
+import com.mpush.mpns.biz.service.PushService;
 import com.mpush.tools.Jsons;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
+
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -45,61 +49,17 @@ public class PushServiceImpl implements PushService {
     private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
-    private PushSender mpusher;
+    protected PushSender mpusher;
+//
+//    @Resource
+//    private MySqlDaoImpl mySqlDao;
 
     private final AtomicLong msgIdSeq = new AtomicLong(1);//TODO业务自己处理
 
     @Override
-    public boolean notify(String userId, NotifyDO notifyDO) {
-        PushMsg pushMsg = PushMsg.build(MsgType.NOTIFICATION_AND_MESSAGE, Jsons.toJson(notifyDO));
-        pushMsg.setMsgId(Long.toString(msgIdSeq.incrementAndGet()));
+    public boolean notify(String userId, PushMsg pushMsg,PushCallback callback) {
         byte[] content = Jsons.toJson(pushMsg).getBytes(Constants.UTF_8);
-
-        doSend(userId, content, new PushCallback() {
-            int retryCount = 0;
-
-            @Override
-            public void onSuccess(String userId, ClientLocation location) {
-                logger.warn("send msg success");
-            }
-
-            @Override
-            public void onFailure(String userId, ClientLocation clientLocation) {
-                saveOfflineMsg(new OfflineMsg(userId, content));
-            }
-
-            @Override
-            public void onOffline(String userId, ClientLocation clientLocation) {
-                if (clientLocation != null) {
-                    String os = clientLocation.getOsName().toLowerCase();
-                    if (os.contains("ios")) {
-                        send2ANPs(userId, notifyDO, clientLocation.getDeviceId());
-                    } else if (os.contains("android")) {
-                        if (os.contains("xiaomi")) {
-                            send2MiPush(userId, notifyDO);
-                        } else if (os.contains("huawei")) {
-                            send2HuaweiPush(userId, notifyDO);
-                        } else {
-                            send2JPush(userId, notifyDO);
-                        }
-                    } else {
-                        saveOfflineMsg(new OfflineMsg(userId, content));
-                    }
-                } else {
-                    saveOfflineMsg(new OfflineMsg(userId, content));
-                }
-            }
-
-            @Override
-            public void onTimeout(String userId, ClientLocation clientLocation) {
-                if (retryCount++ > 1) {
-                    saveOfflineMsg(new OfflineMsg(userId, content));
-                } else {
-                    doSend(userId, content, this);
-                }
-            }
-        });
-
+        doSend(userId, content,callback);
         return true;
     }
 
@@ -136,27 +96,23 @@ public class PushServiceImpl implements PushService {
     }
 
 
-    private void doSend(String userId, byte[] content, PushCallback callback) {
-        mpusher.send(new PushContext(content)
+    /**
+     * 发送规则：先判断userId，userId为空才会判断userIds
+     * @param userId
+     * @param content
+     * @param callback
+     * @return
+     */
+    public FutureTask<PushResult> doSend(String userId, byte[] content, PushCallback callback) {
+        List<String> userIds = Arrays.asList(userId.split(","));
+        if (!userIds.isEmpty() && userIds.size() > 1){
+            userId = null;
+        }
+        return mpusher.send(new PushContext(content)
                 .setUserId(userId)
+                .setUserIds(userIds)
                 .setCallback(callback)
         );
-    }
-
-    private void send2ANPs(String userId, NotifyDO notifyDO, String deviceToken) {
-        logger.info("send to ANPs");
-    }
-
-    private void send2MiPush(String userId, NotifyDO notifyDO) {
-        logger.info("send to xiaomi push");
-    }
-
-    private void send2HuaweiPush(String userId, NotifyDO notifyDO) {
-        logger.info("send to huawei push");
-    }
-
-    private void send2JPush(String userId, NotifyDO notifyDO) {
-        logger.info("send to jpush");
     }
 
     private void saveOfflineMsg(OfflineMsg offlineMsg) {

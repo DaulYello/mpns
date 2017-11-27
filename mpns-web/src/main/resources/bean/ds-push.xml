@@ -8,13 +8,13 @@
         http://www.springframework.org/schema/jdbc
         http://www.springframework.org/schema/jdbc/spring-jdbc.xsd">
 
-    <!-- Spring Simple连接池 -->
+  <!--  &lt;!&ndash; Spring Simple连接池 &ndash;&gt;
     <bean id="dataSource" class="org.springframework.jdbc.datasource.SimpleDriverDataSource">
         <property name="driverClass" value="org.h2.Driver"/>
         <property name="url" value="jdbc:h2:file:/tmp/.h2/mpush;MODE=MySQL;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1"/>
         <property name="username" value="mpush"/>
         <property name="password" value="mpush"/>
-    </bean>
+    </bean>-->
 
     <!-- 初始化数据表结构 -->
     <!--<jdbc:initialize-database data-source="dataSource" ignore-failures="ALL">

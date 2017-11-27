@@ -19,7 +19,12 @@
 
 package com.mpush.mpns.biz.service;
 
+import com.mpush.api.push.PushCallback;
+import com.mpush.api.push.PushMsg;
+import com.mpush.api.push.PushResult;
 import com.mpush.mpns.biz.domain.NotifyDO;
+
+import java.util.concurrent.FutureTask;
 
 /**
  * Created by ohun on 16/9/15.
@@ -28,8 +33,16 @@ import com.mpush.mpns.biz.domain.NotifyDO;
  */
 public interface PushService {
 
-    boolean notify(String userId, NotifyDO content);
+    boolean notify(String userId, PushMsg pushMsg,PushCallback callback);
 
     boolean send(String userId, byte[] content);
 
+    /**
+     * 发送规则：先判断userId，userId为空才会判断userIds
+     * @param userId
+     * @param content
+     * @param callback
+     * @return
+     */
+    FutureTask<PushResult> doSend(String userId, byte[] content, PushCallback callback);
 }

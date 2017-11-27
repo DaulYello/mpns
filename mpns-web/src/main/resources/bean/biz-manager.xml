@@ -14,4 +14,8 @@
           init-method="start" destroy-method="stop">
         <property name="MPushContext" ref="mPushClient"/>
     </bean>
+
+    <!--<bean id="dbManager" class="com.mpush.mpns.web.db.DbManager">-->
+
+    <!--</bean>-->
 </beans>

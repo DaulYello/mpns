@@ -23,13 +23,13 @@ import com.mpush.api.srd.ServiceDiscovery;
 import com.mpush.api.srd.ServiceNames;
 import com.mpush.api.srd.ServiceNode;
 import com.mpush.client.MPushClient;
-import com.mpush.common.router.RemoteRouterManager;
 import com.mpush.common.user.UserManager;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Collection;
+import java.util.function.Predicate;
 
 /**
  * Created by ohun on 16/9/20.

@@ -42,6 +42,11 @@ public abstract class BaseHandler {
         return router.route(path + ".json").handler(h);
     }
 
+    protected Route routerBlock(String path, Handler<RoutingContext> h) {
+        return router.route(path + ".json").blockingHandler(h);
+    }
+
+
     protected <T> void consumer(String path, Handler<Message<T>> handler) {
         vertx.eventBus().localConsumer("server" + getRootPath() + path, handler);
     }

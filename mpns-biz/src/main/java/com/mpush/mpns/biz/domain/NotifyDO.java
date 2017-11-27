@@ -36,11 +36,13 @@ public class NotifyDO {
     public String ticker; //和title一样
     public Integer number;
     public Map<String, String> extras;
+    public String sender;    //发送者
 
     public NotifyDO() {
     }
 
-    public NotifyDO(String content) {
+    public NotifyDO(String content,String sender) {
         this.content = content;
+        this.sender = sender;
     }
 }

@@ -1,5 +1,6 @@
 package com.mpush.mpns.web;
 
+import com.mpush.bootstrap.ServerLauncher;
 import com.mpush.mpns.web.common.AccessLogHandler;
 import com.mpush.mpns.web.common.ApiErrorHandler;
 import com.sun.management.OperatingSystemMXBean;
@@ -8,6 +9,7 @@ import io.vertx.core.Context;
 import io.vertx.core.Vertx;
 import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
+import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ResponseTimeHandler;
@@ -18,7 +20,6 @@ import io.vertx.ext.web.handler.sockjs.SockJSHandler;
 import io.vertx.ext.web.handler.sockjs.SockJSHandlerOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.support.ResourceBundleMessageSource;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
@@ -66,13 +67,17 @@ public class AppServer extends AbstractVerticle {
         apiRouter.route().failureHandler(ApiErrorHandler.create());
     }
 
+
     @Override
     public void start() {
         initHandler();
-        //initWebSocket();
+//        initWebSocket();
         //initMxBean();
         startServer();
         SpringConfig.scanHandler();
+        ServerLauncher serverLauncher = new ServerLauncher();
+        serverLauncher.init();
+        serverLauncher.start();
     }
 
     private void startServer() {
@@ -82,6 +87,12 @@ public class AppServer extends AbstractVerticle {
         logger.error("app server start success listen " + port);
     }
 
+    /**
+     * 测试代码 js
+     * var eb = new EventBus('http://localhost:8080/ws/eb');
+     * eb.send('server/admin/getUser', 'messge');
+     *
+     */
     private void initWebSocket() {
         Router router = Router.router(vertx);
         SockJSHandlerOptions options = new SockJSHandlerOptions()

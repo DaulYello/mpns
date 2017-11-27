@@ -1,15 +1,30 @@
 package com.mpush.mpns.web.handler;
 
+import com.mpush.api.push.MsgType;
+import com.mpush.api.push.PushCallback;
+import com.mpush.api.push.PushMsg;
+import com.mpush.api.push.PushResult;
+import com.mpush.api.spi.common.CacheManager;
+import com.mpush.api.spi.common.CacheManagerFactory;
 import com.mpush.mpns.biz.domain.NotifyDO;
 import com.mpush.mpns.biz.service.MPushManager;
 import com.mpush.mpns.biz.service.PushService;
 import com.mpush.mpns.web.common.ApiResult;
+import com.mpush.mpns.web.common.MySqlDaoImpl;
+import com.mpush.tools.Jsons;
+import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.RoutingContext;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
+
+
 
 import javax.annotation.Resource;
 
@@ -21,11 +36,18 @@ import javax.annotation.Resource;
 @Controller
 public class AdminHandler extends BaseHandler {
 
+    private final Logger logger = LoggerFactory.getLogger("console");
+
     @Resource
     private PushService pushService;
 
     @Resource
     private MPushManager mPushManager;
+
+    @Resource
+    private MySqlDaoImpl mySqlDao;
+
+    private static CacheManager cacheManager = CacheManagerFactory.create();
 
     @Override
     public String getRootPath() {
@@ -34,7 +56,7 @@ public class AdminHandler extends BaseHandler {
 
     @Override
     protected void initRouter(Router router) {
-        router("/push", this::sendPush);
+        routerBlock("/push", this::sendPush);
         router("/list/servers", this::listMPushServers);
         router("/get/onlineUserNum", this::getOnlineUserNum);
 
@@ -55,11 +77,85 @@ public class AdminHandler extends BaseHandler {
     }
 
     public void sendPush(RoutingContext rc) {
-        String userId = rc.request().getParam("userId");
+        String channel = rc.request().getParam("channel");
+        String appkey = rc.request().getParam("appkey");
+        String userId = rc.request().getParam("uids");
         String content = rc.request().getParam("content");
-        boolean success = pushService.notify(userId, new NotifyDO(content));
-        rc.response().end(new ApiResult<>(success).toString());
+        String sender = rc.request().getParam("sender");
+
+        String sql = "select appkey from mp_channel where channel=?";
+        if (StringUtils.isBlank(channel) || StringUtils.isBlank(channel) || StringUtils.isBlank(userId)) {
+            logger.info("channel:" + channel + ", blank channel or appkey!");
+            rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE, "none of channel,appkey and uids can be blank!").toString());
+            return;
+        }
+
+        this.getCached(channel, sql).setHandler(r -> {
+            if (!appkey.equals(r)){
+                logger.debug("channel:"+channel+" appkey don't match passwd");
+                rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
+                return;
+            }
+            String insertSql = "insert into uc_notify (content,createAt,sender,type) values (?,?,?,?)";
+            JsonArray jsonArray = new JsonArray().add(content).add("2017-02-14").add(sender).add("1");
+            mySqlDao.getConnection()
+                    .compose( c -> mySqlDao.insertReturnKey(c,insertSql,jsonArray))
+                    .setHandler(res -> {
+                        if (res.failed()) {
+                            logger.error(res.cause().getMessage());
+                            rc.response().end(new ApiResult<>(400, "database error!").toString());
+                            return;
+                        }
+
+                        PushMsg pushMsg = PushMsg.build(MsgType.NOTIFICATION_AND_MESSAGE, Jsons.toJson(new NotifyDO(content, sender)));
+                        pushMsg.setMsgId(String.valueOf(res.result()));
+
+                        boolean success = pushService.notify(userId,pushMsg, new PushCallback() {
+
+                            @Override
+                            public void onResult(PushResult result) {
+                                String userSql = "insert into uc_user_notify (msgId,uid,sendStatus,resDesc) values (?,?,?,?)";
+                                JsonArray userArrary = new JsonArray().add(pushMsg.getMsgId()).add(result.getUserId()).add(result.getResultCode()).add(result.getResultDesc());
+                                mySqlDao.getConnection()
+                                        .compose( conn -> mySqlDao.insertWithParams(conn,userSql,userArrary));
+                            }
+                        });
+                        rc.response().end(new ApiResult<>(success).toString());
+                    });
+            });
+
     }
+
+
+
+
+
+    public Future<String> getCached(String cacheName,String sql) {
+        Future<String> future = Future.future();
+        String passwd = cacheManager.get(cacheName,String.class);
+        if (StringUtils.isNotBlank(passwd)) {
+            future.complete(passwd);
+        } else {
+            mySqlDao.getConnection()
+                    .compose(r -> mySqlDao.queryWithParams(r, sql, new JsonArray().add(cacheName)))
+                    .setHandler(res -> {
+                        if (res.failed()) {
+                            logger.error(res.cause().getMessage());
+                            future.complete("");
+                        }else {
+                            String sqlpasswd = res.result() != null && !res.result().isEmpty() ? res.result().get(0).getString("password") : "";
+                            logger.info("数据库获取appkey成功，结果为："+sqlpasswd);
+                            cacheManager.set(cacheName,sqlpasswd,9000);
+                            future.complete(sqlpasswd);
+                        }
+                    });
+        }
+        return future;
+    }
+
+
+
+
 
     public void onTestEvent(Message<JsonObject> event) {
         JsonObject object = event.body();
