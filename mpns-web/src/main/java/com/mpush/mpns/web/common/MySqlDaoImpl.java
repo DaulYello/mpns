@@ -92,6 +92,7 @@ public class MySqlDaoImpl {
     public Future<List<JsonObject>> query(SQLConnection connection, String sql) {
         Future<List<JsonObject>> future = Future.future();
         connection.query(sql, r -> {
+            connection.close();
             if (r.failed()) {
                 logger.error("sql : '"+sql+"'执行异常！"+r.cause().getMessage());
                 future.fail(r.cause());
@@ -106,6 +107,7 @@ public class MySqlDaoImpl {
     public Future<Boolean> insertWithParams(SQLConnection connection, String sql, JsonArray params) {
         Future<Boolean> future =  Future.future();
         connection.updateWithParams(sql, params, r -> {
+            connection.close();
             if (r.failed()){
                 future.fail(r.cause());
                 logger.error("sql : '"+sql+"'执行异常！"+r.cause().getMessage()+ "，参数：" +params.toString());
@@ -128,6 +130,7 @@ public class MySqlDaoImpl {
     public Future<Integer> insertReturnKey(SQLConnection connection, String sql, JsonArray params) {
         Future<Integer> future =  Future.future();
         connection.updateWithParams(sql, params, r -> {
+            connection.close();
             if (r.failed()){
                 logger.error("sql : '"+sql+"'执行异常！"+r.cause().getMessage()+ "，参数：" +params.toString());
                 future.fail(r.cause());
@@ -145,6 +148,7 @@ public class MySqlDaoImpl {
     public Future<Boolean> insert(SQLConnection connection, String sql) {
         Future<Boolean> future =  Future.future();
         connection.update(sql, r -> {
+            connection.close();
             if (r.failed()){
                 logger.error("sql : '"+sql+"'执行异常！"+r.cause().getMessage());
                 future.fail(r.cause());

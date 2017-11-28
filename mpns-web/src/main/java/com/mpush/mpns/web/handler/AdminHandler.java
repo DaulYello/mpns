@@ -11,6 +11,7 @@ import com.mpush.mpns.biz.service.MPushManager;
 import com.mpush.mpns.biz.service.PushService;
 import com.mpush.mpns.web.common.ApiResult;
 import com.mpush.mpns.web.common.MySqlDaoImpl;
+import com.mpush.mpns.web.common.Utils.JdbcUtil;
 import com.mpush.tools.Jsons;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.EventBus;
@@ -27,6 +28,7 @@ import org.springframework.stereotype.Controller;
 
 
 import javax.annotation.Resource;
+import java.time.LocalDateTime;
 
 /**
  * Created by yxx on 2016/4/26.
@@ -36,7 +38,7 @@ import javax.annotation.Resource;
 @Controller
 public class AdminHandler extends BaseHandler {
 
-    private final Logger logger = LoggerFactory.getLogger("console");
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
     private PushService pushService;
@@ -84,20 +86,24 @@ public class AdminHandler extends BaseHandler {
         String sender = rc.request().getParam("sender");
 
         String sql = "select appkey from mp_channel where channel=?";
-        if (StringUtils.isBlank(channel) || StringUtils.isBlank(channel) || StringUtils.isBlank(userId)) {
+        if (StringUtils.isBlank(channel) || StringUtils.isBlank(appkey) || StringUtils.isBlank(userId)) {
             logger.info("channel:" + channel + ", blank channel or appkey!");
             rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE, "none of channel,appkey and uids can be blank!").toString());
             return;
         }
 
         this.getCached(channel, sql).setHandler(r -> {
-            if (!appkey.equals(r)){
+            if (!appkey.equals(r.result())){
                 logger.debug("channel:"+channel+" appkey don't match passwd");
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
             String insertSql = "insert into uc_notify (content,createAt,sender,type) values (?,?,?,?)";
-            JsonArray jsonArray = new JsonArray().add(content).add("2017-02-14").add(sender).add("1");
+            JsonArray jsonArray = new JsonArray().
+                    add(JdbcUtil.getHtmlStringValue(content)).
+                    add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
+                    add(JdbcUtil.getStringValue(sender)).
+                    add(userId.indexOf(",") > 0 ? 1 : 0);
             mySqlDao.getConnection()
                     .compose( c -> mySqlDao.insertReturnKey(c,insertSql,jsonArray))
                     .setHandler(res -> {
@@ -115,7 +121,10 @@ public class AdminHandler extends BaseHandler {
                             @Override
                             public void onResult(PushResult result) {
                                 String userSql = "insert into uc_user_notify (msgId,uid,sendStatus,resDesc) values (?,?,?,?)";
-                                JsonArray userArrary = new JsonArray().add(pushMsg.getMsgId()).add(result.getUserId()).add(result.getResultCode()).add(result.getResultDesc());
+                                JsonArray userArrary = new JsonArray().add(pushMsg.getMsgId()).
+                                        add(JdbcUtil.getStringValue(result.getUserId())).
+                                        add(result.getResultCode()).
+                                        add(result.getResultDesc());
                                 mySqlDao.getConnection()
                                         .compose( conn -> mySqlDao.insertWithParams(conn,userSql,userArrary));
                             }
@@ -143,7 +152,7 @@ public class AdminHandler extends BaseHandler {
                             logger.error(res.cause().getMessage());
                             future.complete("");
                         }else {
-                            String sqlpasswd = res.result() != null && !res.result().isEmpty() ? res.result().get(0).getString("password") : "";
+                            String sqlpasswd = res.result() != null && !res.result().isEmpty() ? res.result().get(0).getString("appkey") : "";
                             logger.info("数据库获取appkey成功，结果为："+sqlpasswd);
                             cacheManager.set(cacheName,sqlpasswd,9000);
                             future.complete(sqlpasswd);
