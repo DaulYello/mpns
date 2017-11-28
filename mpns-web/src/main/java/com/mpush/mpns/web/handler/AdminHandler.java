@@ -54,13 +54,13 @@ public class AdminHandler extends BaseHandler {
 
     @Override
     protected void initRouter(Router router) {
-        routerBlock("/admin/push", this::sendPush);
+        router("/admin/push", this::sendPush);
         router("/admin/list/servers", this::listMPushServers);
         router("/admin/get/onlineUserNum", this::getOnlineUserNum);
 
-        routerBlock("/client/get/read", this::listMsgToRead);
-        router("/client/get/push", this::listMsgToPush);
-        router("/client/read/msg", this::readMsg);
+        router("/client/getRead", this::listMsgToRead);
+        router("/client/getPush", this::listMsgToPush);
+        router("/client/readMsg", this::readMsg);
 
         initConsumer(eventBus);
     }
@@ -78,6 +78,10 @@ public class AdminHandler extends BaseHandler {
         rc.response().end(new ApiResult<>(mPushManager.getOnlineUserNum(ip)).toString());
     }
 
+    /**
+     * 后台给前端推送信息
+     * @param rc
+     */
     public void sendPush(RoutingContext rc) {
         String channel = rc.request().getParam("channel");
         String appkey = rc.request().getParam("appkey");
@@ -137,9 +141,12 @@ public class AdminHandler extends BaseHandler {
     }
 
 
-
-
-
+    /**
+     * 获取缓存的code,没有则从数据库取
+     * @param cacheName
+     * @param sql
+     * @return
+     */
     public Future<String> getCached(String cacheName,String sql) {
         Future<String> future = Future.future();
         String passwd = cacheManager.get(cacheName,String.class);
@@ -173,19 +180,18 @@ public class AdminHandler extends BaseHandler {
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
             String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.read=0";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
-            this.mySqlDao.getConnection().compose((c) -> {
-                return this.mySqlDao.queryWithParams(c, sql, params);
-            }).setHandler((res) -> {
-                if(res.failed()) {
-                    this.logger.error(res.cause().getMessage());
-                    rc.response().end((new ApiResult(400, "database error!")).toString());
-                } else {
-                    rc.response().end((new ApiResult(res.result())).toString());
-                }
-            });
+            this.mySqlDao.getConnection().compose((c) -> mySqlDao.queryWithParams(c, sql, params))
+                    .setHandler((res) -> {
+                        if(res.failed()) {
+                            this.logger.error(res.cause().getMessage());
+                            rc.response().end((new ApiResult(400, "database error!")).toString());
+                        } else {
+                            rc.response().end((new ApiResult(res.result().toString())).toString());
+                        }
+                    });
         } else {
             this.logger.info("uid:" + userId + ", blank channel!");
-            rc.response().end((new ApiResult(0, "none of uid and appkey can be blank!")).toString());
+            rc.response().end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
         }
     }
 
@@ -198,7 +204,7 @@ public class AdminHandler extends BaseHandler {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
-            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus=0";
+            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus<>1";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> {
                 return this.mySqlDao.queryWithParams(c, sql, params);
@@ -207,8 +213,8 @@ public class AdminHandler extends BaseHandler {
                     this.logger.error(res.cause().getMessage());
                     rc.response().end((new ApiResult(400, "database error!")).toString());
                 } else {
-                    rc.response().end((new ApiResult(res.result())).toString());
-                    String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus=0";
+                    rc.response().end((new ApiResult(res.result().toString())).toString());
+                    String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus<>1";
                     this.mySqlDao.getConnection().compose((conn) -> {
                         return this.mySqlDao.updateWithParams(conn, updateSql, params);
                     });
@@ -216,7 +222,7 @@ public class AdminHandler extends BaseHandler {
             });
         } else {
             this.logger.info("uid:" + userId + ", blank channel!");
-            rc.response().end((new ApiResult(0, "none of uid and appkey can be blank!")).toString());
+            rc.response().end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
         }
     }
 
@@ -229,7 +235,7 @@ public class AdminHandler extends BaseHandler {
         String msgId = rc.request().getParam("msgId");
         String userId = rc.request().getParam("uid");
         if(!StringUtils.isBlank(msgId) && !StringUtils.isBlank(userId)) {
-            String sql = "update uc_user_notify  set read =1 where msgId=? and uid=?";
+            String sql = "update uc_user_notify  set  `read` =1 where msgId=? and uid=?";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(msgId)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> {
                 return this.mySqlDao.updateWithParams(c, sql, params);
