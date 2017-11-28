@@ -51,22 +51,22 @@ public class AdminHandler extends BaseHandler {
 
     private static CacheManager cacheManager = CacheManagerFactory.create();
 
-    @Override
-    public String getRootPath() {
-        return "/admin";
-    }
 
     @Override
     protected void initRouter(Router router) {
-        routerBlock("/push", this::sendPush);
-        router("/list/servers", this::listMPushServers);
-        router("/get/onlineUserNum", this::getOnlineUserNum);
+        routerBlock("/admin/push", this::sendPush);
+        router("/admin/list/servers", this::listMPushServers);
+        router("/admin/get/onlineUserNum", this::getOnlineUserNum);
+
+        routerBlock("/client/get/read", this::listMsgToRead);
+        router("/client/get/push", this::listMsgToPush);
+        router("/client/read/msg", this::readMsg);
 
         initConsumer(eventBus);
     }
 
     protected void initConsumer(EventBus eventBus) {
-        consumer("/getUser", this::onTestEvent);
+        consumer("/admin/getUser", this::onTestEvent);
     }
 
     public void listMPushServers(RoutingContext rc) {
@@ -98,12 +98,13 @@ public class AdminHandler extends BaseHandler {
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
-            String insertSql = "insert into uc_notify (content,createAt,sender,type) values (?,?,?,?)";
+            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel) values (?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
                     add(JdbcUtil.getHtmlStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
-                    add(userId.indexOf(",") > 0 ? 1 : 0);
+                    add(userId.indexOf(",") > 0 ? 1 : 0).
+                    add(JdbcUtil.getStringValue(channel));
             mySqlDao.getConnection()
                     .compose( c -> mySqlDao.insertReturnKey(c,insertSql,jsonArray))
                     .setHandler(res -> {
@@ -162,8 +163,89 @@ public class AdminHandler extends BaseHandler {
         return future;
     }
 
+    /**
+     * 第一次连接时，获取所有未读信息
+     * @param rc
+     */
+    public void listMsgToRead(RoutingContext rc) {
+        String channel = rc.request().getParam("channel");
+        String userId = rc.request().getParam("uid");
+        if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
+            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.read=0";
+            JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
+            this.mySqlDao.getConnection().compose((c) -> {
+                return this.mySqlDao.queryWithParams(c, sql, params);
+            }).setHandler((res) -> {
+                if(res.failed()) {
+                    this.logger.error(res.cause().getMessage());
+                    rc.response().end((new ApiResult(400, "database error!")).toString());
+                } else {
+                    rc.response().end((new ApiResult(res.result())).toString());
+                }
+            });
+        } else {
+            this.logger.info("uid:" + userId + ", blank channel!");
+            rc.response().end((new ApiResult(0, "none of uid and appkey can be blank!")).toString());
+        }
+    }
 
+    /**
+     * web端pull，20秒或30秒一次，获取未推送信息
+     * @param rc
+     */
 
+    public void listMsgToPush(RoutingContext rc) {
+        String channel = rc.request().getParam("channel");
+        String userId = rc.request().getParam("uid");
+        if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
+            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus=0";
+            JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
+            this.mySqlDao.getConnection().compose((c) -> {
+                return this.mySqlDao.queryWithParams(c, sql, params);
+            }).setHandler((res) -> {
+                if(res.failed()) {
+                    this.logger.error(res.cause().getMessage());
+                    rc.response().end((new ApiResult(400, "database error!")).toString());
+                } else {
+                    rc.response().end((new ApiResult(res.result())).toString());
+                    String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus=0";
+                    this.mySqlDao.getConnection().compose((conn) -> {
+                        return this.mySqlDao.updateWithParams(conn, updateSql, params);
+                    });
+                }
+            });
+        } else {
+            this.logger.info("uid:" + userId + ", blank channel!");
+            rc.response().end((new ApiResult(0, "none of uid and appkey can be blank!")).toString());
+        }
+    }
+
+    /**
+     * 用户读取某个信息
+     * @param rc
+     */
+
+    public void readMsg(RoutingContext rc) {
+        String msgId = rc.request().getParam("msgId");
+        String userId = rc.request().getParam("uid");
+        if(!StringUtils.isBlank(msgId) && !StringUtils.isBlank(userId)) {
+            String sql = "update uc_user_notify  set read =1 where msgId=? and uid=?";
+            JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(msgId)).add(JdbcUtil.getStringValue(userId));
+            this.mySqlDao.getConnection().compose((c) -> {
+                return this.mySqlDao.updateWithParams(c, sql, params);
+            }).setHandler((res) -> {
+                if(res.failed()) {
+                    this.logger.error(res.cause().getMessage());
+                    rc.response().end((new ApiResult(400, "database error!")).toString());
+                } else {
+                    rc.response().end((new ApiResult("SUCESS")).toString());
+                }
+            });
+        } else {
+            this.logger.info("uid:" + userId + ", blank msgId!");
+            rc.response().end((new ApiResult(0, "none of uid and msgId can be blank!")).toString());
+        }
+    }
 
 
     public void onTestEvent(Message<JsonObject> event) {
