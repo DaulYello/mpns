@@ -1,4 +1,4 @@
 {
   "http.server.port": ${http.server.port},
-  "vertx.options.warningExceptionTime":10000000000
+"vertx.options.warningExceptionTime":10000000000
 }

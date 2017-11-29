@@ -15,7 +15,12 @@
         <property name="MPushContext" ref="mPushClient"/>
     </bean>
 
-    <!--<bean id="dbManager" class="com.mpush.mpns.web.db.DbManager">-->
-
-    <!--</bean>-->
+    <bean id="mySqlDao" class="com.mpush.mpns.web.common.MySqlDaoImpl"  init-method="init">
+        <property name="host" value="${db.host}"/>
+        <property name="username" value="${db.username}"/>
+        <property name="password" value="${db.password}"/>
+        <property name="maxPollSize" value="${db.maxPollSize}"/>
+        <property name="port" value="${db.port}"/>
+        <property name="database" value="${db.database}"/>
+    </bean>
 </beans>

@@ -1,19 +1,15 @@
 package com.mpush.mpns.web.common;
 
-import com.mpush.mpns.web.AppServer;
-import com.mpush.mpns.web.common.Utils.PropUtil;
 import io.vertx.core.Future;
+import io.vertx.core.Vertx;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.asyncsql.MySQLClient;
 import io.vertx.ext.sql.SQLClient;
 import io.vertx.ext.sql.SQLConnection;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -21,21 +17,24 @@ import java.util.List;
 /**
  * Created by zzl on 2017/11/20.
  */
-
-@Service
 public class MySqlDaoImpl {
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger("console");
 
     protected SQLClient client;
 
     @Resource
-    protected AppServer server;
+    protected Vertx vertx;
 
     // 数据库...
-    @PostConstruct
     public void init() {
-        JsonObject config = PropUtil.getJsonObject(MySqlDaoImpl.class.getResource("/database.json").getFile());
-        client = MySQLClient.createShared(server.getVertx(),config.getJsonObject("db"));
+        JsonObject object = new JsonObject()
+                .put("host",host)
+                .put("port",port)
+                .put("username",username)
+                .put("password",password)
+                .put("maxPollSize",maxPollSize)
+                .put("database",database);
+        client = MySQLClient.createShared(vertx,object);
     }
 
 
@@ -181,4 +180,65 @@ public class MySqlDaoImpl {
         return insert(connection, sql);
     }
 
+
+    private String host;
+
+    private int maxPollSize;
+
+    private int port;
+
+    private String username;
+
+    private String password;
+
+    private String database;
+
+
+    public String getHost() {
+        return host;
+    }
+
+    public void setHost(String host) {
+        this.host = host;
+    }
+
+    public int getMaxPollSize() {
+        return maxPollSize;
+    }
+
+    public void setMaxPollSize(int maxPollSize) {
+        this.maxPollSize = maxPollSize;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    public void setPort(int port) {
+        this.port = port;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public String getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(String database) {
+        this.database = database;
+    }
 }
