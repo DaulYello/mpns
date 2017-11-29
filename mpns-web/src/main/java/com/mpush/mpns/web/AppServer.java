@@ -83,7 +83,7 @@ public class AppServer extends AbstractVerticle {
         int port = config.getInteger("http.server.port", 8080);
         server = vertx.createHttpServer();
         server.requestHandler(mainRouter::accept).listen(port);
-        logger.error("app server start success listen " + port);
+        logger.info("app server start success listen " + port);
     }
 
     /**

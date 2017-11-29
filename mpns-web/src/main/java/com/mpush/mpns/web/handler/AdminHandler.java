@@ -38,7 +38,7 @@ import java.time.LocalDateTime;
 @Controller
 public class AdminHandler extends BaseHandler {
 
-    private final Logger logger = LoggerFactory.getLogger(this.getClass());
+    private final Logger logger = LoggerFactory.getLogger("console");
 
     @Resource
     private PushService pushService;
