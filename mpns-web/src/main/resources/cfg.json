@@ -5,8 +5,8 @@
     "maxPollSize":10,
     "host":"127.0.0.1",
     "port":3306,
-    "username":"root",
-    "password":"root",
+    "username":"uat",
+    "password":"1qaz3edc1qaz",
     "database":"maio.pc"
   }
 }
