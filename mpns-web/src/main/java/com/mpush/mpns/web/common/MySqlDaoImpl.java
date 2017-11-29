@@ -1,6 +1,7 @@
 package com.mpush.mpns.web.common;
 
 import com.mpush.mpns.web.AppServer;
+import com.mpush.mpns.web.common.Utils.PropUtil;
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.List;
+
 
 /**
  * Created by zzl on 2017/11/20.
@@ -32,7 +34,8 @@ public class MySqlDaoImpl {
     // 数据库...
     @PostConstruct
     public void init() {
-        client = MySQLClient.createShared(server.getVertx(), server.getConfig().getJsonObject("db"));
+        JsonObject config = PropUtil.getJsonObject(MySqlDaoImpl.class.getResource("/database.json").getFile());
+        client = MySQLClient.createShared(server.getVertx(),config.getJsonObject("db"));
     }
 
 

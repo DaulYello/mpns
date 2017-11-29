@@ -1,12 +1,4 @@
 {
   "http.server.port": ${http.server.port},
-  "vertx.options.warningExceptionTime":10000000000,
-  "db": {
-    "maxPollSize":10,
-    "host":"127.0.0.1",
-    "port":3306,
-    "username":"uat",
-    "password":"1qaz3edc1qaz",
-    "database":"maio.pc"
-  }
+  "vertx.options.warningExceptionTime":10000000000
 }
