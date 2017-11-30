@@ -29,7 +29,6 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.util.Collection;
-import java.util.function.Predicate;
 
 /**
  * Created by ohun on 16/9/20.

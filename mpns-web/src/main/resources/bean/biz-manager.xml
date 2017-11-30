@@ -23,4 +23,6 @@
         <property name="port" value="${db.port}"/>
         <property name="database" value="${db.database}"/>
     </bean>
+
+    <!--<bean id="mPushServer" class="com.mpush.bootstrap.ServerLauncher" init-method="start" destroy-method="stop"/>-->
 </beans>

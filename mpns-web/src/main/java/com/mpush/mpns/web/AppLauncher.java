@@ -1,5 +1,6 @@
 package com.mpush.mpns.web;
 
+import com.mpush.bootstrap.ServerLauncher;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
@@ -24,6 +25,12 @@ public class AppLauncher extends Launcher {
     private JsonObject config;
 
     public static void main(String[] args) {
+        // 启动顺序，先启动mpush 再启动mpns
+        ServerLauncher serverLauncher = new ServerLauncher();
+        serverLauncher.init();
+        serverLauncher.start();
+
+        //启动mpns
         AppLauncher launcher = new AppLauncher();
         launcher.dispatch(args);
     }

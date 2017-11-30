@@ -74,9 +74,7 @@ public class AppServer extends AbstractVerticle {
         //initMxBean();
         startServer();
         SpringConfig.scanHandler();
-        ServerLauncher serverLauncher = new ServerLauncher();
-        serverLauncher.init();
-        serverLauncher.start();
+
     }
 
     private void startServer() {
