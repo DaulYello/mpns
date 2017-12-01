@@ -38,7 +38,7 @@ import java.time.LocalDateTime;
 @Controller
 public class AdminHandler extends BaseHandler {
 
-    private final Logger logger = LoggerFactory.getLogger("console");
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     @Resource
     private PushService pushService;
@@ -125,7 +125,7 @@ public class AdminHandler extends BaseHandler {
 
                             @Override
                             public void onResult(PushResult result) {
-                                String userSql = "insert into uc_user_notify (msgId,uid,sendStatus,resDesc) values (?,?,?,?)";
+                                String userSql = "insert into uc_user_notify (notifyId,uid,sendStatus,resDesc) values (?,?,?,?)";
                                 JsonArray userArrary = new JsonArray().add(pushMsg.getMsgId()).
                                         add(JdbcUtil.getStringValue(result.getUserId())).
                                         add(result.getResultCode()).
@@ -178,7 +178,8 @@ public class AdminHandler extends BaseHandler {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
-            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.read=0";
+            String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
+                    "u.notifyId and n.channel=? and u.uid=? and u.read=0";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> mySqlDao.queryWithParams(c, sql, params))
                     .setHandler((res) -> {
@@ -204,7 +205,8 @@ public class AdminHandler extends BaseHandler {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
-            String sql = "select n.msgId,n.content from uc_notify n,uc_user_notify u where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus<>1";
+            String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
+                    "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> {
                 return this.mySqlDao.queryWithParams(c, sql, params);
@@ -214,7 +216,8 @@ public class AdminHandler extends BaseHandler {
                     rc.response().end((new ApiResult(400, "database error!")).toString());
                 } else {
                     rc.response().end((new ApiResult(res.result().toString())).toString());
-                    String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.msgId=u.msgId and n.channel=? and u.uid=? and u.sendStatus<>1";
+                    String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.notifyId=" +
+                            "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
                     this.mySqlDao.getConnection().compose((conn) -> {
                         return this.mySqlDao.updateWithParams(conn, updateSql, params);
                     });
@@ -232,10 +235,10 @@ public class AdminHandler extends BaseHandler {
      */
 
     public void readMsg(RoutingContext rc) {
-        String msgId = rc.request().getParam("msgId");
+        String msgId = rc.request().getParam("notifyId");
         String userId = rc.request().getParam("uid");
         if(!StringUtils.isBlank(msgId) && !StringUtils.isBlank(userId)) {
-            String sql = "update uc_user_notify  set  `read` =1 where msgId=? and uid=?";
+            String sql = "update uc_user_notify  set  `read` =1 where notifyId=? and uid=?";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(msgId)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> {
                 return this.mySqlDao.updateWithParams(c, sql, params);
@@ -248,8 +251,8 @@ public class AdminHandler extends BaseHandler {
                 }
             });
         } else {
-            this.logger.info("uid:" + userId + ", blank msgId!");
-            rc.response().end((new ApiResult(0, "none of uid and msgId can be blank!")).toString());
+            this.logger.info("uid:" + userId + ", blank notifyId!");
+            rc.response().end((new ApiResult(0, "none of uid and notifyId can be blank!")).toString());
         }
     }
 

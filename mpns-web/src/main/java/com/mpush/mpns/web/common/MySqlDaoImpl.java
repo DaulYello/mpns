@@ -18,7 +18,7 @@ import java.util.List;
  * Created by zzl on 2017/11/20.
  */
 public class MySqlDaoImpl {
-    private final Logger logger = LoggerFactory.getLogger("console");
+    private final Logger logger = LoggerFactory.getLogger(this.getClass());
 
     protected SQLClient client;
 
