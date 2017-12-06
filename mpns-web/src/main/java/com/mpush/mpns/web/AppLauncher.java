@@ -1,16 +1,11 @@
 package com.mpush.mpns.web;
 
-import com.mpush.bootstrap.ServerLauncher;
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Launcher;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import io.vertx.core.logging.SLF4JLogDelegateFactory;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
 
 import static io.vertx.core.impl.launcher.commands.BareCommand.VERTX_OPTIONS_PROP_PREFIX;
 import static io.vertx.core.logging.LoggerFactory.LOGGER_DELEGATE_FACTORY_CLASS_NAME;
@@ -25,11 +20,6 @@ public class AppLauncher extends Launcher {
     private JsonObject config;
 
     public static void main(String[] args) {
-        // 启动顺序，先启动mpush 再启动mpns
-        ServerLauncher serverLauncher = new ServerLauncher();
-        serverLauncher.init();
-        serverLauncher.start();
-
         //启动mpns
         AppLauncher launcher = new AppLauncher();
         launcher.dispatch(args);

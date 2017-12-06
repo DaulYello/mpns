@@ -66,7 +66,7 @@ public class AdminHandler extends BaseHandler {
     }
 
     protected void initConsumer(EventBus eventBus) {
-        consumer("/admin/getUser", this::onTestEvent);
+        consumer("/getUser", this::onTestEvent);
     }
 
     public void listMPushServers(RoutingContext rc) {
@@ -177,6 +177,7 @@ public class AdminHandler extends BaseHandler {
     public void listMsgToRead(RoutingContext rc) {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
+        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
             String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.read=0";
@@ -185,14 +186,14 @@ public class AdminHandler extends BaseHandler {
                     .setHandler((res) -> {
                         if(res.failed()) {
                             this.logger.error(res.cause().getMessage());
-                            rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(400, "database error!")).toString());
+                            rc.response().end((new ApiResult(400, "database error!")).toString());
                         } else {
-                            rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(res.result().toString())).toString());
+                            rc.response().end((new ApiResult(res.result().toString())).toString());
                         }
                     });
         } else {
             this.logger.info("uid:" + userId + ", blank channel!");
-            rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
+            rc.response().end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
         }
     }
 
@@ -204,6 +205,7 @@ public class AdminHandler extends BaseHandler {
     public void listMsgToPush(RoutingContext rc) {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
+        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
             String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
@@ -213,9 +215,9 @@ public class AdminHandler extends BaseHandler {
             }).setHandler((res) -> {
                 if(res.failed()) {
                     this.logger.error(res.cause().getMessage());
-                    rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(400, "database error!")).toString());
+                    rc.response().end((new ApiResult(400, "database error!")).toString());
                 } else {
-                    rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(res.result().toString())).toString());
+                    rc.response().end((new ApiResult(res.result().toString())).toString());
                     String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.notifyId=" +
                             "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
                     this.mySqlDao.getConnection().compose((conn) -> {
@@ -225,7 +227,7 @@ public class AdminHandler extends BaseHandler {
             });
         } else {
             this.logger.info("uid:" + userId + ", blank channel!");
-            rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
+            rc.response().end((new ApiResult(0, "none of uid and channel can be blank!")).toString());
         }
     }
 
@@ -237,6 +239,7 @@ public class AdminHandler extends BaseHandler {
     public void readMsg(RoutingContext rc) {
         String msgId = rc.request().getParam("notifyId");
         String userId = rc.request().getParam("uid");
+        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(msgId) && !StringUtils.isBlank(userId)) {
             String sql = "update uc_user_notify  set  `read` =1 where notifyId=? and uid=?";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(msgId)).add(JdbcUtil.getStringValue(userId));
@@ -245,14 +248,14 @@ public class AdminHandler extends BaseHandler {
             }).setHandler((res) -> {
                 if(res.failed()) {
                     this.logger.error(res.cause().getMessage());
-                    rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(400, "database error!")).toString());
+                    rc.response().end((new ApiResult(400, "database error!")).toString());
                 } else {
-                    rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult("SUCESS")).toString());
+                    rc.response().end((new ApiResult("SUCESS")).toString());
                 }
             });
         } else {
             this.logger.info("uid:" + userId + ", blank notifyId!");
-            rc.response().putHeader("Access-Control-Allow-Origin", "*").end((new ApiResult(0, "none of uid and notifyId can be blank!")).toString());
+            rc.response().end((new ApiResult(0, "none of uid and notifyId can be blank!")).toString());
         }
     }
 

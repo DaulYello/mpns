@@ -70,8 +70,8 @@ public class AppServer extends AbstractVerticle {
     @Override
     public void start() {
         initHandler();
-//        initWebSocket();
-        //initMxBean();
+        initWebSocket();
+        initMxBean();
         startServer();
         SpringConfig.scanHandler();
 
