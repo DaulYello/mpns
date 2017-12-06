@@ -15,7 +15,7 @@
         <property name="MPushContext" ref="mPushClient"/>
     </bean>
 
-    <bean id="mySqlDao" class="com.mpush.mpns.web.common.MySqlDaoImpl"  init-method="init">
+    <bean id="mySqlUtil" class="com.mpush.mpns.web.common.MySqlUtil" init-method="init">
         <property name="host" value="${db.host}"/>
         <property name="username" value="${db.username}"/>
         <property name="password" value="${db.password}"/>

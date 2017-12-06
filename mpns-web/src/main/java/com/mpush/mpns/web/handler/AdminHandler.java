@@ -10,7 +10,7 @@ import com.mpush.mpns.biz.domain.NotifyDO;
 import com.mpush.mpns.biz.service.MPushManager;
 import com.mpush.mpns.biz.service.PushService;
 import com.mpush.mpns.web.common.ApiResult;
-import com.mpush.mpns.web.common.MySqlDaoImpl;
+import com.mpush.mpns.web.common.MySqlUtil;
 import com.mpush.mpns.web.common.Utils.JdbcUtil;
 import com.mpush.tools.Jsons;
 import io.vertx.core.Future;
@@ -47,7 +47,7 @@ public class AdminHandler extends BaseHandler {
     private MPushManager mPushManager;
 
     @Resource
-    private MySqlDaoImpl mySqlDao;
+    private MySqlUtil mySqlDao;
 
     private static CacheManager cacheManager = CacheManagerFactory.create();
 
