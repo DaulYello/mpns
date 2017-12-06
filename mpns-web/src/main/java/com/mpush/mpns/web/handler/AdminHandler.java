@@ -179,7 +179,7 @@ public class AdminHandler extends BaseHandler {
         String userId = rc.request().getParam("uid");
         rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
-            String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
+            String sql = "select n.notifyId as msgId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.read=0";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> mySqlDao.queryWithParams(c, sql, params))
@@ -207,7 +207,7 @@ public class AdminHandler extends BaseHandler {
         String userId = rc.request().getParam("uid");
         rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
-            String sql = "select n.notifyId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
+            String sql = "select n.notifyId as msgId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
             this.mySqlDao.getConnection().compose((c) -> {
