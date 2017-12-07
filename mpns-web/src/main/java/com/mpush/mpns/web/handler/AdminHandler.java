@@ -121,13 +121,13 @@ public class AdminHandler extends BaseHandler {
                         PushMsg pushMsg = PushMsg.build(MsgType.NOTIFICATION_AND_MESSAGE, Jsons.toJson(new NotifyDO(content, sender)));
                         pushMsg.setMsgId(String.valueOf(res.result()));
 
-                        boolean success = pushService.notify(userId,pushMsg, new PushCallback() {
+                        boolean success = pushService.notify(channel,userId,pushMsg, new PushCallback() {
 
                             @Override
                             public void onResult(PushResult result) {
                                 String userSql = "insert into uc_user_notify (notifyId,uid,sendStatus,resDesc) values (?,?,?,?)";
                                 JsonArray userArrary = new JsonArray().add(pushMsg.getMsgId()).
-                                        add(JdbcUtil.getStringValue(result.getUserId())).
+                                        add(JdbcUtil.getStringValue(result.getUserId().split("_")[1])).
                                         add(result.getResultCode()).
                                         add(result.getResultDesc());
                                 mySqlDao.getConnection()
