@@ -22,7 +22,6 @@ package com.mpush.mpns.biz.service.impl;
 import com.mpush.api.Constants;
 import com.mpush.api.push.*;
 import com.mpush.api.router.ClientLocation;
-import com.mpush.mpns.biz.domain.NotifyDO;
 import com.mpush.mpns.biz.domain.OfflineMsg;
 import com.mpush.mpns.biz.service.PushService;
 import com.mpush.tools.Jsons;
@@ -31,10 +30,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-
-
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.atomic.AtomicLong;
@@ -57,15 +53,15 @@ public class PushServiceImpl implements PushService {
     private final AtomicLong msgIdSeq = new AtomicLong(1);//TODO业务自己处理
 
     @Override
-    public boolean notify(String userId, PushMsg pushMsg,PushCallback callback) {
+    public boolean notify(String channel,String userId, PushMsg pushMsg,PushCallback callback) {
         byte[] content = Jsons.toJson(pushMsg).getBytes(Constants.UTF_8);
-        doSend(userId, content,callback);
+        doSend(channel,userId, content,callback);
         return true;
     }
 
     @Override
-    public boolean send(String userId, byte[] content) {
-        doSend(userId, content, new PushCallback() {
+    public boolean send(String channel,String userId, byte[] content) {
+        doSend(channel,userId, content, new PushCallback() {
             int retryCount = 0;
 
             @Override
@@ -88,7 +84,7 @@ public class PushServiceImpl implements PushService {
                 if (retryCount++ > 1) {
                     saveOfflineMsg(new OfflineMsg(userId, content));
                 } else {
-                    doSend(userId, content, this);
+                    doSend(channel,userId, content, this);
                 }
             }
         });
@@ -103,14 +99,20 @@ public class PushServiceImpl implements PushService {
      * @param callback
      * @return
      */
-    public FutureTask<PushResult> doSend(String userId, byte[] content, PushCallback callback) {
-        List<String> userIds = Arrays.asList(userId.split(","));
-        if (!userIds.isEmpty() && userIds.size() > 1){
+    public FutureTask<PushResult> doSend(String channel, String userId, byte[] content, PushCallback callback) {
+        String[] userArrary = userId.split(",");
+        List<String> userIdList = new ArrayList<>();
+        if (userArrary.length > 1){
+            for (String s : userArrary){
+                userIdList.add(channel +"_"+s);
+            }
             userId = null;
+        } else {
+            userId = channel +"_"+userId;
         }
         return mpusher.send(new PushContext(content)
                 .setUserId(userId)
-                .setUserIds(userIds)
+                .setUserIds(userIdList)
                 .setCallback(callback)
         );
     }

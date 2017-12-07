@@ -33,9 +33,9 @@ import java.util.concurrent.FutureTask;
  */
 public interface PushService {
 
-    boolean notify(String userId, PushMsg pushMsg,PushCallback callback);
+    boolean notify(String channel,String userId, PushMsg pushMsg,PushCallback callback);
 
-    boolean send(String userId, byte[] content);
+    boolean send(String channel,String userId, byte[] content);
 
     /**
      * 发送规则：先判断userId，userId为空才会判断userIds
@@ -44,5 +44,5 @@ public interface PushService {
      * @param callback
      * @return
      */
-    FutureTask<PushResult> doSend(String userId, byte[] content, PushCallback callback);
+    FutureTask<PushResult> doSend(String channel,String userId, byte[] content, PushCallback callback);
 }
