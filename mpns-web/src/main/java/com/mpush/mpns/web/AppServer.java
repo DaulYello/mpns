@@ -1,6 +1,5 @@
 package com.mpush.mpns.web;
 
-import com.mpush.bootstrap.ServerLauncher;
 import com.mpush.mpns.web.common.AccessLogHandler;
 import com.mpush.mpns.web.common.ApiErrorHandler;
 import com.sun.management.OperatingSystemMXBean;
@@ -11,6 +10,7 @@ import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
+import io.vertx.ext.web.handler.CorsHandler;
 import io.vertx.ext.web.handler.ResponseTimeHandler;
 import io.vertx.ext.web.handler.TimeoutHandler;
 import io.vertx.ext.web.handler.sockjs.BridgeOptions;
@@ -22,6 +22,8 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.util.HashSet;
+import java.util.Set;
 
 import static java.util.concurrent.TimeUnit.MINUTES;
 
@@ -58,10 +60,21 @@ public class AppServer extends AbstractVerticle {
         );
         mainRouter.route("/favicon.ico").handler(FaviconHandler.create("/webroot/favicon.ico"));
         mainRouter.route().failureHandler(ErrorHandler.create());*/
+
         mainRouter.mountSubRouter("/api", apiRouter);
+        // CORS support
+        Set<String> allowHeaders = new HashSet<>();
+        allowHeaders.add("x-requested-with");
+        allowHeaders.add("Access-Control-Allow-Origin");
+        allowHeaders.add("origin");
+        allowHeaders.add("Content-Type");
+        allowHeaders.add("accept");
+
         apiRouter.route().handler(TimeoutHandler.create(config.getInteger("max.request.timeout", 10 * 1024)));
         apiRouter.route().handler(AccessLogHandler.create(config.getString("api.access.log", "App-Api")));
         apiRouter.route().handler(BodyHandler.create());
+        apiRouter.route().handler(CorsHandler.create("*")
+                .allowedHeaders(allowHeaders));
         apiRouter.route().handler(ResponseTimeHandler.create());
         apiRouter.route().failureHandler(ApiErrorHandler.create());
     }
@@ -74,7 +87,6 @@ public class AppServer extends AbstractVerticle {
         initMxBean();
         startServer();
         SpringConfig.scanHandler();
-
     }
 
     private void startServer() {
