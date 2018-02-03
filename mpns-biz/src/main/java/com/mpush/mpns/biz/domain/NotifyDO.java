@@ -37,12 +37,14 @@ public class NotifyDO {
     public Integer number;
     public Map<String, String> extras;
     public String sender;    //发送者
+    public String redirectUrl;
 
     public NotifyDO() {
     }
 
-    public NotifyDO(String content,String sender) {
+    public NotifyDO(String content,String sender,String redirectUrl) {
         this.content = content;
         this.sender = sender;
+        this.redirectUrl = redirectUrl;
     }
 }

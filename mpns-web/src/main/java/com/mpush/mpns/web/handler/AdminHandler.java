@@ -87,6 +87,7 @@ public class AdminHandler extends BaseHandler {
         String userId = rc.request().getParam("uids");
         String content = rc.request().getParam("content");
         String sender = rc.request().getParam("sender");
+        String url = rc.request().getParam("redirectUrl");
 
         String sql = "select appkey from mp_channel where channel=?";
         if (StringUtils.isBlank(channel) || StringUtils.isBlank(appkey) || StringUtils.isBlank(userId)) {
@@ -101,13 +102,14 @@ public class AdminHandler extends BaseHandler {
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
-            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel) values (?,?,?,?,?)";
+            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel,url) values (?,?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
                     add(JdbcUtil.getHtmlStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
                     add(userId.indexOf(",") > 0 ? 1 : 0).
-                    add(JdbcUtil.getStringValue(channel));
+                    add(JdbcUtil.getStringValue(channel)).
+                    add(JdbcUtil.getStringValue(url));
             mySqlUtil.getConnection()
                     .compose( c -> mySqlUtil.insertReturnKey(c,insertSql,jsonArray))
                     .setHandler(res -> {
@@ -117,7 +119,7 @@ public class AdminHandler extends BaseHandler {
                             return;
                         }
 
-                        PushMsg pushMsg = PushMsg.build(MsgType.NOTIFICATION_AND_MESSAGE, Jsons.toJson(new NotifyDO(content, sender)));
+                        PushMsg pushMsg = PushMsg.build(MsgType.NOTIFICATION_AND_MESSAGE, Jsons.toJson(new NotifyDO(content, sender,url)));
                         pushMsg.setMsgId(String.valueOf(res.result()));
 
                         boolean success = pushService.notify(channel,userId,pushMsg, new PushCallback() {
