@@ -102,14 +102,14 @@ public class AdminHandler extends BaseHandler {
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
-            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel,url) values (?,?,?,?,?,?)";
+            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel,redirectUrl) values (?,?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
                     add(JdbcUtil.getHtmlStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
                     add(userId.indexOf(",") > 0 ? 1 : 0).
                     add(JdbcUtil.getStringValue(channel)).
-                    add(JdbcUtil.getStringValue(url));
+                    add(StringUtils.isBlank(url) ? "" : JdbcUtil.getStringValue(url));
             mySqlUtil.getConnection()
                     .compose( c -> mySqlUtil.insertReturnKey(c,insertSql,jsonArray))
                     .setHandler(res -> {
