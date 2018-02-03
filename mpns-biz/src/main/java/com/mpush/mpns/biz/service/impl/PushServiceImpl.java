@@ -33,7 +33,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by ohun on 16/9/15.
@@ -50,7 +49,7 @@ public class PushServiceImpl implements PushService {
 //    @Resource
 //    private MySqlDaoImpl mySqlDao;
 
-    private final AtomicLong msgIdSeq = new AtomicLong(1);//TODO业务自己处理
+//    private final AtomicLong msgIdSeq = new AtomicLong(1);//TODO业务自己处理
 
     @Override
     public boolean notify(String channel,String userId, PushMsg pushMsg,PushCallback callback) {

@@ -186,6 +186,7 @@
         <appender-ref ref="MPUSH_DEBUG_APPENDER"/>
     </root>
 
+    <!-- below mpush log  -->
     <logger name="console" additivity="false">
         <level value="debug"/>
         <appender-ref ref="STDOUT"/>

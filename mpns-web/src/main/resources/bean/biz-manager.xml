@@ -6,9 +6,12 @@
     <bean id="serviceDiscovery" class="com.mpush.api.spi.common.ServiceDiscoveryFactory"
           factory-method="create" init-method="start" destroy-method="stop"/>
 
-    <bean id="mPushClient" class="com.mpush.client.MPushClient">
+    <!--<bean id="mPushServer" class="com.mpush.bootstrap.ServerLauncher" init-method="start" destroy-method="stop"/>-->
 
+
+    <bean id="mPushClient" class="com.mpush.client.MPushClient">
     </bean>
+
 
     <bean id="pushSender" class="com.mpush.client.push.PushClient"
           init-method="start" destroy-method="stop">
@@ -24,5 +27,4 @@
         <property name="database" value="${db.database}"/>
     </bean>
 
-    <!--<bean id="mPushServer" class="com.mpush.bootstrap.ServerLauncher" init-method="start" destroy-method="stop"/>-->
 </beans>

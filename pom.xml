@@ -50,7 +50,6 @@
     <modules>
         <module>mpns-web</module>
         <module>mpns-biz</module>
-        <module>mpns-client</module>
     </modules>
 
     <dependencyManagement>

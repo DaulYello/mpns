@@ -47,7 +47,7 @@ public class AdminHandler extends BaseHandler {
     private MPushManager mPushManager;
 
     @Resource
-    private MySqlUtil mySqlDao;
+    private MySqlUtil mySqlUtil;
 
     private static CacheManager cacheManager = CacheManagerFactory.create();
 
@@ -74,8 +74,7 @@ public class AdminHandler extends BaseHandler {
     }
 
     public void getOnlineUserNum(RoutingContext rc) {
-        String ip = rc.request().getParam("ip");
-        rc.response().end(new ApiResult<>(mPushManager.getOnlineUserNum(ip)).toString());
+        rc.response().end(new ApiResult<>(mPushManager.getOnlineUserNum()).toString());
     }
 
     /**
@@ -109,8 +108,8 @@ public class AdminHandler extends BaseHandler {
                     add(JdbcUtil.getStringValue(sender)).
                     add(userId.indexOf(",") > 0 ? 1 : 0).
                     add(JdbcUtil.getStringValue(channel));
-            mySqlDao.getConnection()
-                    .compose( c -> mySqlDao.insertReturnKey(c,insertSql,jsonArray))
+            mySqlUtil.getConnection()
+                    .compose( c -> mySqlUtil.insertReturnKey(c,insertSql,jsonArray))
                     .setHandler(res -> {
                         if (res.failed()) {
                             logger.error(res.cause().getMessage());
@@ -130,8 +129,8 @@ public class AdminHandler extends BaseHandler {
                                         add(JdbcUtil.getStringValue(result.getUserId().split("_")[1])).
                                         add(result.getResultCode()).
                                         add(result.getResultDesc());
-                                mySqlDao.getConnection()
-                                        .compose( conn -> mySqlDao.insertWithParams(conn,userSql,userArrary));
+                                mySqlUtil.getConnection()
+                                        .compose( conn -> mySqlUtil.insertWithParams(conn,userSql,userArrary));
                             }
                         });
                         rc.response().end(new ApiResult<>(success).toString());
@@ -153,8 +152,8 @@ public class AdminHandler extends BaseHandler {
         if (StringUtils.isNotBlank(passwd)) {
             future.complete(passwd);
         } else {
-            mySqlDao.getConnection()
-                    .compose(r -> mySqlDao.queryWithParams(r, sql, new JsonArray().add(cacheName)))
+            mySqlUtil.getConnection()
+                    .compose(r -> mySqlUtil.queryWithParams(r, sql, new JsonArray().add(cacheName)))
                     .setHandler(res -> {
                         if (res.failed()) {
                             logger.error(res.cause().getMessage());
@@ -177,12 +176,11 @@ public class AdminHandler extends BaseHandler {
     public void listMsgToRead(RoutingContext rc) {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
-        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
             String sql = "select n.notifyId as msgId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.read=0";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
-            this.mySqlDao.getConnection().compose((c) -> mySqlDao.queryWithParams(c, sql, params))
+            this.mySqlUtil.getConnection().compose((c) -> mySqlUtil.queryWithParams(c, sql, params))
                     .setHandler((res) -> {
                         if(res.failed()) {
                             this.logger.error(res.cause().getMessage());
@@ -205,13 +203,12 @@ public class AdminHandler extends BaseHandler {
     public void listMsgToPush(RoutingContext rc) {
         String channel = rc.request().getParam("channel");
         String userId = rc.request().getParam("uid");
-        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(channel) && !StringUtils.isBlank(userId)) {
             String sql = "select n.notifyId as msgId,n.content from uc_notify n,uc_user_notify u where n.notifyId=" +
                     "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(channel)).add(JdbcUtil.getStringValue(userId));
-            this.mySqlDao.getConnection().compose((c) -> {
-                return this.mySqlDao.queryWithParams(c, sql, params);
+            this.mySqlUtil.getConnection().compose((c) -> {
+                return this.mySqlUtil.queryWithParams(c, sql, params);
             }).setHandler((res) -> {
                 if(res.failed()) {
                     this.logger.error(res.cause().getMessage());
@@ -220,8 +217,8 @@ public class AdminHandler extends BaseHandler {
                     rc.response().end((new ApiResult(res.result().toString())).toString());
                     String updateSql = "update uc_notify n,uc_user_notify u set u.sendStatus =1 where n.notifyId=" +
                             "u.notifyId and n.channel=? and u.uid=? and u.sendStatus<>1";
-                    this.mySqlDao.getConnection().compose((conn) -> {
-                        return this.mySqlDao.updateWithParams(conn, updateSql, params);
+                    this.mySqlUtil.getConnection().compose((conn) -> {
+                        return this.mySqlUtil.updateWithParams(conn, updateSql, params);
                     });
                 }
             });
@@ -239,12 +236,11 @@ public class AdminHandler extends BaseHandler {
     public void readMsg(RoutingContext rc) {
         String msgId = rc.request().getParam("notifyId");
         String userId = rc.request().getParam("uid");
-        rc.response().putHeader("Access-Control-Allow-Origin", "*");
         if(!StringUtils.isBlank(msgId) && !StringUtils.isBlank(userId)) {
             String sql = "update uc_user_notify  set  `read` =1 where notifyId=? and uid=?";
             JsonArray params = (new JsonArray()).add(JdbcUtil.getStringValue(msgId)).add(JdbcUtil.getStringValue(userId));
-            this.mySqlDao.getConnection().compose((c) -> {
-                return this.mySqlDao.updateWithParams(c, sql, params);
+            this.mySqlUtil.getConnection().compose((c) -> {
+                return this.mySqlUtil.updateWithParams(c, sql, params);
             }).setHandler((res) -> {
                 if(res.failed()) {
                     this.logger.error(res.cause().getMessage());

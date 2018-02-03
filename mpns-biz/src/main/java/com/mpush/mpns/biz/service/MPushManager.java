@@ -55,8 +55,8 @@ public class MPushManager {
         return serviceDiscovery.lookup(ServiceNames.CONN_SERVER);
     }
 
-    public long getOnlineUserNum(String serverIp) {
-        return userManager.getOnlineUserNum(serverIp);
+    public long getOnlineUserNum() {
+        return userManager.getOnlineUserNum();
     }
 
     public void kickUser(String userId) {
