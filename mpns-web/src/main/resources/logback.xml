@@ -9,10 +9,10 @@
     <appender name="MPUSH_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/mpush.log.%d{yyyy-MM-dd}
-            </fileNamePattern>
-            <maxHistory>10</maxHistory>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/mpush.%d{yyyy-MM-dd}.%i.log.zip</fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - [%thread] %-5level - %logger{35} - %msg%n</pattern>
@@ -28,9 +28,10 @@
             <onMismatch>DENY</onMismatch>
         </filter>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/info-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/info-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
             <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
@@ -47,9 +48,10 @@
             <onMismatch>DENY</onMismatch>
         </filter>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/debug-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/debug-mpush.%d{yyyy-MM}.%i.log.zip
             </fileNamePattern>
+            <maxFileSize>20MB</maxFileSize>
             <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
@@ -61,10 +63,11 @@
     <appender name="MONITOR_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/monitor-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/monitor-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/monitor-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>5</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -75,10 +78,11 @@
     <appender name="CONNECTION_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/conn-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/conn-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/conn-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -89,10 +93,11 @@
     <appender name="PUSH_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/push-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/push-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/push-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -103,10 +108,11 @@
     <appender name="HEARTBEAT_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/heartbeat-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/heartbeat-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/heartbeat-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>30</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -117,10 +123,11 @@
     <appender name="CACHE_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/cache-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/cache-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/cache-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>5</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -131,10 +138,11 @@
     <appender name="HTTP_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/http-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/http-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/http-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>5</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -145,10 +153,11 @@
     <appender name="SRD_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/srd-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/srd-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/srd-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>10</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
@@ -159,10 +168,11 @@
     <appender name="PROFILE_APPENDER" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>${log.home}/profile-mpush.log</file>
         <append>true</append>
-        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${log.home}/profile-mpush.log.%d{yyyy-MM-dd}
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>${log.home}/profile-mpush.%d{yyyy-MM-dd}.%i.log.zip
             </fileNamePattern>
-            <maxHistory>10</maxHistory>
+            <maxFileSize>20MB</maxFileSize>
+            <maxHistory>3</maxHistory>
         </rollingPolicy>
         <encoder charset="UTF-8">
             <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n</pattern>
