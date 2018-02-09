@@ -6,7 +6,7 @@
     <bean id="serviceDiscovery" class="com.mpush.api.spi.common.ServiceDiscoveryFactory"
           factory-method="create" init-method="start" destroy-method="stop"/>
 
-    <!--<bean id="mPushServer" class="com.mpush.bootstrap.ServerLauncher" init-method="start" destroy-method="stop"/>-->
+    <bean id="mPushServer" class="com.mpush.bootstrap.ServerLauncher" init-method="start" destroy-method="stop"/>
 
 
     <bean id="mPushClient" class="com.mpush.client.MPushClient">

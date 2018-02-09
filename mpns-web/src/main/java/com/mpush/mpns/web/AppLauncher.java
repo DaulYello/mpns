@@ -22,9 +22,9 @@ public class AppLauncher extends Launcher {
 
     public static void main(String[] args) {
         //启动顺序，先启动mpush,再启动mpns
-        ServerLauncher mpushlauncher = new ServerLauncher();
-//        launcher.init();
-        mpushlauncher.start();
+//        ServerLauncher mpushlauncher = new ServerLauncher();
+////        launcher.init();
+//        mpushlauncher.start();
 
         //启动mpns
         AppLauncher launcher = new AppLauncher();
