@@ -88,6 +88,7 @@ public class AdminHandler extends BaseHandler {
         String content = rc.request().getParam("content");
         String sender = rc.request().getParam("sender");
         String url = rc.request().getParam("redirectUrl");
+        String source = rc.request().getParam("source");
 
         String sql = "select appkey from mp_channel where channel=?";
         if (StringUtils.isBlank(channel) || StringUtils.isBlank(appkey) || StringUtils.isBlank(userId)) {
@@ -102,11 +103,12 @@ public class AdminHandler extends BaseHandler {
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
-            String insertSql = "insert into uc_notify (content,createAt,sender,type,channel,redirectUrl) values (?,?,?,?,?,?)";
+            String insertSql = "insert into uc_notify (content,createAt,sender,source,type,channel,redirectUrl) values (?,?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
-                    add(JdbcUtil.getHtmlStringValue(content)).
+                    add(JdbcUtil.getStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
+                    add(JdbcUtil.getStringValue(source)).
                     add(userId.indexOf(",") > 0 ? 1 : 0).
                     add(JdbcUtil.getStringValue(channel)).
                     add(StringUtils.isBlank(url) ? "" : JdbcUtil.getStringValue(url));
@@ -162,7 +164,7 @@ public class AdminHandler extends BaseHandler {
                             future.complete("");
                         }else {
                             String sqlpasswd = res.result() != null && !res.result().isEmpty() ? res.result().get(0).getString("appkey") : "";
-                            logger.info("数据库获取appkey成功，结果为："+sqlpasswd);
+                            logger.info("Getting appkey success,the result is："+sqlpasswd);
                             cacheManager.set(cacheName,sqlpasswd,9000);
                             future.complete(sqlpasswd);
                         }
