@@ -105,7 +105,7 @@ public class AdminHandler extends BaseHandler {
             }
             String insertSql = "insert into uc_notify (content,createAt,sender,source,type,channel,redirectUrl) values (?,?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
-                    add(JdbcUtil.getStringValue(content)).
+                    add(JdbcUtil.getHtmlStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
                     add(JdbcUtil.getStringValue(source)).
