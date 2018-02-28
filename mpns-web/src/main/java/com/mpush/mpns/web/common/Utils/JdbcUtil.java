@@ -40,7 +40,7 @@ public class JdbcUtil {
      */
     public static String getStringValue(Object obj) {
         if (obj == null)
-            return null;
+            return "";
         else
             return  getBareStringValue(obj) ;
     }
