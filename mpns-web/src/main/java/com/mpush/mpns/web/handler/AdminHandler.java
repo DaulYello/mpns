@@ -105,13 +105,19 @@ public class AdminHandler extends BaseHandler {
                 rc.response().end(new ApiResult<>(ApiResult.VERTIFY_FAILURE,"wrong appkey!").toString());
                 return;
             }
+            int msgType =  0;
+            if (StringUtils.isNotBlank(groupId)){
+                msgType = 1;
+            }else if (StringUtils.isNotBlank(roleId)){
+                msgType = 2;
+            }
             String insertSql = "insert into uc_notify (content,createAt,sender,source,type,groupId,characterId,channel,redirectUrl) values (?,?,?,?,?,?,?,?,?)";
             JsonArray jsonArray = new JsonArray().
                     add(JdbcUtil.getHtmlStringValue(content)).
                     add(JdbcUtil.getLocalDateTime(LocalDateTime.now())).
                     add(JdbcUtil.getStringValue(sender)).
                     add(JdbcUtil.getStringValue(source)).
-                    add(userId.indexOf(",") > 0 ? 1 : 0).
+                    add(msgType).
                     add(JdbcUtil.getStringValue(groupId)).
                     add(JdbcUtil.getStringValue(roleId)).
                     add(JdbcUtil.getStringValue(channel)).
