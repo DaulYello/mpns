@@ -92,6 +92,9 @@ public class AdminHandler extends BaseHandler {
         String groupId = rc.request().getParam("group");
         String roleId = rc.request().getParam("character");
 
+        logger.info("push msg request param,channel:{},appkey:{},userId:{},content:{},sender:{},url:{}," +
+                "source:{},groupId:{},roleId:{}",channel,appkey,userId,content,sender,url,source,groupId,roleId);
+
         String sql = "select appkey from mp_channel where channel=?";
         if (StringUtils.isBlank(channel) || StringUtils.isBlank(appkey) || StringUtils.isBlank(userId)) {
             logger.info("channel:" + channel + ", blank channel or appkey!");

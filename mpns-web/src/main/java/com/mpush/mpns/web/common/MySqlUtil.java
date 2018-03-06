@@ -85,7 +85,7 @@ public class MySqlUtil {
                 future.fail(r.cause());
                 return;
             }
-            logger.error(" query sql with params : '"+sql+"'正常执行！参数：" +params.toString());
+            logger.info(" query sql with params : '"+sql+"'正常执行！参数：" +params.toString());
             future.complete(r.result().getRows());
         });
         return future;
@@ -100,7 +100,7 @@ public class MySqlUtil {
                 future.fail(r.cause());
                 return;
             }
-            logger.error(" query sql : '"+sql+"'正常执行！");
+            logger.info(" query sql : '"+sql+"'正常执行！");
             future.complete(r.result().getRows());
         });
         return future;
@@ -115,7 +115,7 @@ public class MySqlUtil {
                 logger.error("sql : '"+sql+"'执行异常！"+r.cause().getMessage()+ "，参数：" +params.toString());
                 return;
             }
-            logger.error(" insert  sql with params : '"+sql+"'正常执行！参数：" +params.toString());
+            logger.info(" insert  sql with params : '"+sql+"'正常执行！参数：" +params.toString());
             future.complete(r.result().getUpdated() > 1 ? true : false);
         });
         return future;
@@ -138,7 +138,7 @@ public class MySqlUtil {
                 future.fail(r.cause());
                 return;
             }
-            logger.error(" insert  sql with params : '"+sql+"'正常执行！参数：" +params.toString());
+            logger.info(" insert  sql with params : '"+sql+"'正常执行！参数：" +params.toString());
             future.complete(r.result().getKeys().getInteger(0));
         });
         return future;
@@ -156,7 +156,7 @@ public class MySqlUtil {
                 future.fail(r.cause());
                 return;
             }
-            logger.error(" insert  sql : '"+sql+"'正常执行！");
+            logger.info(" insert  sql : '"+sql+"'正常执行！");
             future.complete(r.result().getUpdated() > 1 ? true : false);
         });
         return future;
